@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const { User } = require("../db");
+const { Account } = require("../db");
 const { JWT_SECRET } = require("../config");
 const { authMiddleware } = require("../middlewares/authmiddleware");
 
@@ -45,7 +46,7 @@ const hashPassword = (password) => {
   return bcrypt.hash(password, 10);
 };
 
-router.post("/Signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
     const result = signupBody.safeParse(req.body);
     if (!result.success) {
@@ -69,6 +70,14 @@ router.post("/Signup", async (req, res) => {
       lastname: req.body.lastname.trim(),
     });
 
+    const userId = user._id;
+    const randomBalance = Math.random() * 10000;
+
+    const account = await Account.create({
+      userId,
+      balance: 1 + randomBalance,
+    });
+
     const token = generateToken(user._id);
     res.status(201).json({ message: "Signup successful", token });
   } catch (error) {
@@ -77,7 +86,7 @@ router.post("/Signup", async (req, res) => {
   }
 });
 
-router.post("/Signin", async (req, res) => {
+router.post("/signin", async (req, res) => {
   try {
     const result = signinBody.safeParse(req.body);
     if (!result.success) {
@@ -105,7 +114,7 @@ router.post("/Signin", async (req, res) => {
   }
 });
 
-router.put("/Update", authMiddleware, async (req, res) => {
+router.put("/update", authMiddleware, async (req, res) => {
   try {
     const result = updateUserBody.safeParse(req.body);
     if (!result.success) {
